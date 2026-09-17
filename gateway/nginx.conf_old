@@ -1,0 +1,53 @@
+events {}
+
+http {
+  include /etc/nginx/mime.types;
+
+  upstream api {
+    server api:9000;
+  }
+
+  server {
+    listen 80;
+    charset utf-8;
+    server_tokens off;
+    absolute_redirect off;
+
+    # Proxy /api requests to the API service (HTTP)
+    location /api/ {
+      try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ ^/index\.php(/|$) {
+      root /var/www/html/api/public;
+      fastcgi_pass api;
+      fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+      include fastcgi_params;
+      fastcgi_hide_header X-Powered-By;
+    }
+
+    # All other requests go to the frontend
+    location = / {
+      return 301 /sis-rme/;
+    }
+    location = /sis-rme {
+      return 301 /sis-rme/;
+    }
+
+    # nosemgrep: generic.nginx.security.alias-path-traversal.alias-path-traversal
+    location = /sis-rme/config.json {
+      alias /var/www/html/frontend/;
+      try_files config.json =404;
+    }
+
+    location /sis-rme/ {
+      alias /var/www/html/frontend/;
+      try_files $uri $uri/ /sis-rme/index.html;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+      root   /usr/share/nginx/html;
+    }
+  }
+}
