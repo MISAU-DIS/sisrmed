@@ -1,0 +1,13 @@
+services:
+  webserver:
+    image: hub.csaude.org.mz/nginx-ssl/nginx-ssl:latest
+    container_name: nginxsvr
+    network_mode: host
+    ports:
+      - 443:443
+    restart: unless-stopped
+    volumes:
+      - ./conf/default/default.conf:/etc/nginx/sites-available/default
+      - ./conf:/etc/nginx/conf.d/:ro
+      - ./certs:/etc/nginx/certs/:ro
+      - /var/log/nginx:/var/log/nginx/:rw

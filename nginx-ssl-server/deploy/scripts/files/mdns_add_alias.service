@@ -1,0 +1,13 @@
+[Unit]
+Description=Run mdns_add_alias script at startup
+After=network-online.target avahi-daemon.service
+Wants=network-online.target
+
+[Service]
+ExecStart=/etc/mdns_add_alias/mdns_add_alias.sh
+Type=simple
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target
